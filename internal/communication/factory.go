@@ -7,19 +7,20 @@ package communication
 
 import (
 	"crypto/tls"
+	netHttp "net/http"
+	"time"
+
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/authentication"
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/configuration"
 	"github.com/sirupsen/logrus"
-	netHttp "net/http"
-	"time"
 )
 
-// NewHttpClient is a factory method to create a new Http Client with a default configuration.
+// NewHTTPClient is a factory method to create a new Http Client with a default configuration.
 // RoundTripper is a wrapper around the default net/communication Transport to add additional headers, in this case,
 // the Headers are configured for JSON.
-func NewHttpClient(settings *configuration.Settings) (*netHttp.Client, error) {
+func NewHTTPClient(settings *configuration.Settings) (*netHttp.Client, error) {
 	headers := NewHeaders()
-	tlsConfig := NewTlsConfig(settings)
+	tlsConfig := NewTLSConfig(settings)
 	transport := NewTransport(tlsConfig)
 	roundTripper := NewRoundTripper(headers, transport)
 
@@ -39,13 +40,13 @@ func NewHeaders() []string {
 	}
 }
 
-// NewTlsConfig is a factory method to create a new basic Tls Config.
+// NewTLSConfig is a factory method to create a new basic Tls Config.
 // More attention should be given to the use of `InsecureSkipVerify: true`, as it is not recommended for production use.
-func NewTlsConfig(settings *configuration.Settings) *tls.Config {
-	tlsConfig, err := authentication.NewTlsConfig(settings)
+func NewTLSConfig(settings *configuration.Settings) *tls.Config {
+	tlsConfig, err := authentication.NewTLSConfig(settings)
 	if err != nil {
 		logrus.Warnf("Failed to create TLS config: %v", err)
-		return &tls.Config{InsecureSkipVerify: true}
+		return &tls.Config{InsecureSkipVerify: true} //nolint:gosec
 	}
 
 	return tlsConfig

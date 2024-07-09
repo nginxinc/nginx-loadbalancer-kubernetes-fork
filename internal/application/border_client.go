@@ -7,6 +7,7 @@ package application
 
 import (
 	"fmt"
+
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/core"
 	"github.com/sirupsen/logrus"
 )
@@ -34,8 +35,8 @@ func NewBorderClient(clientType string, borderClient interface{}) (Interface, er
 	case ClientTypeNginxStream:
 		return NewNginxStreamBorderClient(borderClient)
 
-	case ClientTypeNginxHttp:
-		return NewNginxHttpBorderClient(borderClient)
+	case ClientTypeNginxHTTP:
+		return NewNginxHTTPBorderClient(borderClient)
 
 	default:
 		borderClient, _ := NewNullBorderClient()

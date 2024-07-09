@@ -1,11 +1,13 @@
 package core
 
 import (
-	v1 "k8s.io/api/core/v1"
 	"testing"
+
+	v1 "k8s.io/api/core/v1"
 )
 
 func TestNewEvent(t *testing.T) {
+	t.Parallel()
 	expectedType := Created
 	expectedService := &v1.Service{}
 	expectedPreviousService := &v1.Service{}

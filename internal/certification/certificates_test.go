@@ -7,12 +7,13 @@ package certification
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
-	"testing"
-	"time"
 )
 
 const (
@@ -20,6 +21,7 @@ const (
 )
 
 func TestNewCertificate(t *testing.T) {
+	t.Parallel()
 	ctx := context.Background()
 
 	certificates := NewCertificates(ctx, nil)
@@ -30,6 +32,7 @@ func TestNewCertificate(t *testing.T) {
 }
 
 func TestCertificates_Initialize(t *testing.T) {
+	t.Parallel()
 	certificates := NewCertificates(context.Background(), nil)
 
 	err := certificates.Initialize()
@@ -39,6 +42,7 @@ func TestCertificates_Initialize(t *testing.T) {
 }
 
 func TestCertificates_RunWithoutInitialize(t *testing.T) {
+	t.Parallel()
 	certificates := NewCertificates(context.Background(), nil)
 
 	err := certificates.Run()
@@ -52,6 +56,7 @@ func TestCertificates_RunWithoutInitialize(t *testing.T) {
 }
 
 func TestCertificates_EmptyCertificates(t *testing.T) {
+	t.Parallel()
 	certificates := NewCertificates(context.Background(), nil)
 
 	err := certificates.Initialize()
@@ -74,6 +79,7 @@ func TestCertificates_EmptyCertificates(t *testing.T) {
 }
 
 func TestCertificates_ExerciseHandlers(t *testing.T) {
+	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -85,6 +91,7 @@ func TestCertificates_ExerciseHandlers(t *testing.T) {
 
 	certificates.CaCertificateSecretKey = CaCertificateSecretKey
 
+	//nolint:govet,staticcheck
 	go func() {
 		err := certificates.Run()
 		if err != nil {

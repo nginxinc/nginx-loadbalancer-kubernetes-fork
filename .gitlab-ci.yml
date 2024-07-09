@@ -1,0 +1,178 @@
+---
+include:
+  - project: "f5/nginx/tools/devops-utils"
+    file: "/include/cxsast-ci-generic.yml"
+    ref: "master"
+  - project: "f5/nginx/tools/devops-utils"
+    file: "/include/devops-docker-cicd.yaml"
+    ref: "master"
+  - project: "f5/nginx/tools/devops-utils"
+    file: "include/devops-whitesource.yaml"
+    ref: "master"
+  - project: "f5/nginx/tools/devops-utils"
+    file: "/include/gitlab-sast.yml"
+    ref: "master"
+
+stages:
+  - lint+test+build
+  - release
+
+variables:
+  DEVTOOLS_IMG: ${DEVOPS_DOCKER_URL_DEFAULT}/nginx-azure-lb/nlb-devtools:latest
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+.import-devops-core-services: &import-devops-core-services |
+  source ${CI_PROJECT_DIR}/.devops.sh
+
+.go-cache:
+  variables:
+    GOPATH: $CI_PROJECT_DIR/.go
+  cache:
+    key:
+      files:
+        - go.mod
+        - go.sum
+    paths:
+      - .go/pkg/mod/
+
+.go-cache-readonly:
+  extends:
+    - .go-cache
+  cache:
+    policy: pull
+
+.golang-private: &golang-private
+  - |
+    cat << EOF > ~/.netrc
+    machine gitlab.com
+        login gitlab-ci-token
+        password ${CI_JOB_TOKEN}
+    EOF
+    go env -w GOPRIVATE="gitlab.com/f5"
+    go env
+
+lint + unit-test + build:
+  stage: lint+test+build
+  image: $DEVTOOLS_IMG
+  extends:
+    - .devops-docker-cicd-large
+    - .go-cache
+  script:
+    - *golang-private
+    - |
+      if [ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]; then
+        time make lint
+        git diff --exit-code
+        time make test
+      fi
+      time make publish
+  coverage: '/^total:\s+\(statements\)\s+(\d+\.\d+\%)$/'
+  artifacts:
+    when:
+      always
+    paths:
+      - results
+    expire_in: 3 hours
+    reports:
+      junit: results/report.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH || $CI_MERGE_REQUEST_ID'
+
+unit-test-data-race:
+  stage: lint+test+build
+  image: $DEVTOOLS_IMG
+  variables:
+    GO_DATA_RACE: "true"
+  extends:
+    - .default-runner-large
+    - .go-cache-readonly
+  script:
+    - *golang-private
+    - time make test
+  coverage: '/^total:\s+\(statements\)\s+(\d+\.\d+\%)$/'
+  artifacts:
+    when:
+      always
+    paths:
+      - results
+    expire_in: 3 hours
+    reports:
+      junit: results/report.xml
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule" && $GO_DATA_RACE == "true"'
+
+whitesource-scan:
+  stage: lint+test+build
+  extends:
+    - .default-runner
+    - .go-cache
+    - .whitesource-template-go
+  variables:
+    NESTED: "true"
+    WS_WSS_URL: "https://f5.whitesourcesoftware.com/agent"
+    WS_APIKEY: "${WS_APIKEY_NGINX}"
+    WS_PRODUCTNAME: "N4A"
+    WS_PROJECTNAME: "${CI_PROJECT_NAME}"
+    WS_GO_MODULES_RESOLVEDEPENDENCIES: "true"
+    WS_GO_RESOLVEDEPENDENCIES: "false"
+    WS_GENERATEPROJECTDETAILSJSON: "true"
+  script:
+    - *golang-private
+    - !reference [.whitesource-template-go, script]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+  artifacts:
+    when: always
+    paths:
+      - ${CI_PROJECT_DIR}/whitesource/
+    expire_in: 1 weeks
+
+################################################################################
+# GitLab SAST security scanning
+# CISO requires that all products be scanned statically for vulnerabilities.
+# For more information, please see:
+#   https://gitlab.com/f5/nginx/tools/devops-utils/-/blob/master/include/gitlab-sast.md
+# NOTE: please do not alter, change, modify, or overwrite job rules, job
+# variables, or runtime states in order to maintain compliance to CISO
+# requirements.
+################################################################################
+sast:
+  stage: lint+test+build
+
+# =====================================================================================
+# CISO-required, SAST-scanning jobs involving the widely distributed checkmarx vendor
+# Job starts immediately and is independent of all other jobs present in the pipeline.
+# =====================================================================================
+checkmarx-scan:
+  stage: lint+test+build
+  extends:
+    # Please DO NOT overwrite extended job's image, gitlab-runner tags, or job rules
+    - .checkmarx-scan-security
+  variables:
+    # project specific variables
+    CX_SOURCES: "."
+    CX_FLOW_ZIP_EXCLUDE: ""
+  needs: []
+  allow_failure: true
+
+tag:
+  stage: release
+  image: $DEVTOOLS_IMG
+  extends:
+    - .default-runner
+  script:
+    - ./scripts/release-tag.sh
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

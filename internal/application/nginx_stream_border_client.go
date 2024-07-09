@@ -2,11 +2,13 @@
  * Copyright 2023 F5 Inc. All rights reserved.
  * Use of this source code is governed by the Apache License that can be found in the LICENSE file.
  */
-
+// dupl complains about duplicates with nginx_http_border_client.go
+//nolint:dupl
 package application
 
 import (
 	"fmt"
+
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/core"
 	nginxClient "github.com/nginxinc/nginx-plus-go-client/client"
 )
@@ -57,7 +59,7 @@ func asNginxStreamUpstreamServer(server *core.UpstreamServer) nginxClient.Stream
 }
 
 func asNginxStreamUpstreamServers(servers core.UpstreamServers) []nginxClient.StreamUpstreamServer {
-	var upstreamServers []nginxClient.StreamUpstreamServer
+	upstreamServers := []nginxClient.StreamUpstreamServer{}
 
 	for _, server := range servers {
 		upstreamServers = append(upstreamServers, asNginxStreamUpstreamServer(server))

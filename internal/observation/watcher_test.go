@@ -7,13 +7,15 @@ package observation
 
 import (
 	"context"
+	"testing"
+
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/configuration"
 	"github.com/nginxinc/kubernetes-nginx-ingress/test/mocks"
 	"k8s.io/client-go/kubernetes"
-	"testing"
 )
 
 func TestWatcher_MustInitialize(t *testing.T) {
+	t.Parallel()
 	watcher, _ := buildWatcher()
 	if err := watcher.Watch(); err == nil {
 		t.Errorf("Expected error, got %s", err)

@@ -7,8 +7,10 @@ package probation
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"net/http"
+	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -58,7 +60,7 @@ func (hs *HealthServer) Start() {
 	mux.HandleFunc("/livez", hs.HandleLive)
 	mux.HandleFunc("/readyz", hs.HandleReady)
 	mux.HandleFunc("/startupz", hs.HandleStartup)
-	hs.httpServer = &http.Server{Addr: address, Handler: mux}
+	hs.httpServer = &http.Server{Addr: address, Handler: mux, ReadTimeout: 2 * time.Second}
 
 	go func() {
 		if err := hs.httpServer.ListenAndServe(); err != nil {
