@@ -69,7 +69,7 @@ parse_args() {
 }
 
 # MAIN
-image="nlk"
+image="nginxaas-operator"
 parse_args "$@"
 init_ci_vars
 
