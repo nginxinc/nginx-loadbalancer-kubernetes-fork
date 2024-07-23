@@ -36,5 +36,5 @@ ldflags=(
 go build \
     -v -tags "release osusergo" \
     -ldflags "${ldflags[*]}" \
-    -o "${BUILD_DIR}/nlk" \
+    -o "${BUILD_DIR}/nginxaas-operator" \
     "$pkg_path"
