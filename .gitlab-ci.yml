@@ -30,22 +30,23 @@ workflow:
 .import-devops-core-services: &import-devops-core-services |
   source ${CI_PROJECT_DIR}/.devops.sh
 
-.go-cache:
-  variables:
-    GOPATH: $CI_PROJECT_DIR/.go
-  cache:
-    key:
-      files:
-        - go.mod
-        - go.sum
-    paths:
-      - .go/pkg/mod/
+# Disabld due to: NLB-5341
+# .go-cache:
+#   variables:
+#     GOPATH: $CI_PROJECT_DIR/.go
+#   cache:
+#     key:
+#       files:
+#         - go.mod
+#         - go.sum
+#     paths:
+#       - .go/pkg/mod/
 
-.go-cache-readonly:
-  extends:
-    - .go-cache
-  cache:
-    policy: pull
+# .go-cache-readonly:
+#   extends:
+#     - .go-cache
+#   cache:
+#     policy: pull
 
 .golang-private: &golang-private
   - |
@@ -62,7 +63,7 @@ lint + unit-test + build:
   image: $DEVTOOLS_IMG
   extends:
     - .devops-docker-cicd-large
-    - .go-cache
+    # - .go-cache
   script:
     - *golang-private
     - |
@@ -93,7 +94,7 @@ unit-test-data-race:
     GO_DATA_RACE: "true"
   extends:
     - .default-runner-large
-    - .go-cache-readonly
+    # - .go-cache-readonly
   script:
     - *golang-private
     - time make test
@@ -113,7 +114,7 @@ whitesource-scan:
   stage: lint+test+build
   extends:
     - .default-runner
-    - .go-cache
+    # - .go-cache
     - .whitesource-template-go
   variables:
     NESTED: "true"
