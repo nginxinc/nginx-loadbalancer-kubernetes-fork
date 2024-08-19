@@ -104,7 +104,7 @@ unit-test-data-race:
       always
     paths:
       - results
-    expire_in: 3 hours
+    expire_in: 1 day
     reports:
       junit: results/report.xml
   rules:
