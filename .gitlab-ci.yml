@@ -58,6 +58,25 @@ workflow:
     go env -w GOPRIVATE="gitlab.com/f5"
     go env
 
+.unit-test-common:
+  stage: lint+test+build
+  image: $DEVTOOLS_IMG
+  extends:
+    - .default-runner-large
+    # - .go-cache-readonly
+  script:
+    - *golang-private
+    - time make test
+  coverage: '/^total:\s+\(statements\)\s+(\d+\.\d+\%)$/'
+  artifacts:
+    when:
+      always
+    paths:
+      - results
+    expire_in: 1 day
+    reports:
+      junit: results/report.xml
+
 lint + unit-test + build:
   stage: lint+test+build
   image: $DEVTOOLS_IMG
@@ -88,27 +107,18 @@ lint + unit-test + build:
     - if: '$CI_COMMIT_BRANCH || $CI_MERGE_REQUEST_ID'
 
 unit-test-data-race:
-  stage: lint+test+build
-  image: $DEVTOOLS_IMG
   variables:
     GO_DATA_RACE: "true"
   extends:
-    - .default-runner-large
-    # - .go-cache-readonly
-  script:
-    - *golang-private
-    - time make test
-  coverage: '/^total:\s+\(statements\)\s+(\d+\.\d+\%)$/'
-  artifacts:
-    when:
-      always
-    paths:
-      - results
-    expire_in: 1 day
-    reports:
-      junit: results/report.xml
+    - .unit-test-common
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule" && $GO_DATA_RACE == "true"'
+
+coverage:
+  extends:
+    - .unit-test-common
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "schedule"'
 
 whitesource-scan:
   stage: lint+test+build
