@@ -195,6 +195,6 @@ dockerhub-push:
   extends:
     - .devops-docker-cicd
   script:
-    - ./scripts/release.sh
+    - ./scripts/release.sh docker-image
   rules:
     - if: '$CI_COMMIT_TAG =~ /^release-[\d]+\.[\d]+\.[\d]+/'
