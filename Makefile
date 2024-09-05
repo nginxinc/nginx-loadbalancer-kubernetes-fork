@@ -47,6 +47,10 @@ build-linux:
 build-linux-docker:
 	@./scripts/docker.sh build
 
+publish-helm:
+	@scripts/docker-login.sh
+	@scripts/publish-helm.sh
+
 publish: build-linux build-linux-docker
 	@scripts/docker-login.sh
 	@./scripts/docker.sh publish

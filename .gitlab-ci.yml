@@ -92,6 +92,7 @@ lint + unit-test + build:
         time make test
       fi
       time make publish
+      time make publish-helm
   coverage: '/^total:\s+\(statements\)\s+(\d+\.\d+\%)$/'
   artifacts:
     when:
