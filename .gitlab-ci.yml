@@ -189,12 +189,24 @@ tag:
       when: never
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
 
-dockerhub-push:
+.release-common:
   stage: release
   image: $DEVTOOLS_IMG
   extends:
     - .devops-docker-cicd
-  script:
-    - ./scripts/release.sh
   rules:
     - if: '$CI_COMMIT_TAG =~ /^release-[\d]+\.[\d]+\.[\d]+/'
+
+dockerhub-image-release:
+  extends:
+    - .devops-docker-cicd
+    - .release-common
+  script:
+    - ./scripts/release.sh docker-image
+
+dockerhub-helm-release:
+  extends:
+    - .devops-docker-cicd
+    - .release-common
+  script:
+    - ./scripts/release.sh helm-chart
