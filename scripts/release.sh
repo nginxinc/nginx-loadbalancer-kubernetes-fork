@@ -16,7 +16,7 @@ docker-image() {
 }
 
 helm-chart() {
-    SRC_PATH="nginxazurelb/charts/nginx-loadbalancer-kubernetes"
+    SRC_PATH="nginx-azure-lb/nginxaas-operator/charts/main/nginx-loadbalancer-kubernetes"
     SRC_TAG="0.1.0"
     SRC_CHART="oci://${SRC_REGISTRY}/${SRC_PATH}:${SRC_TAG}"
     DST_PATH="nginxinc/charts"
