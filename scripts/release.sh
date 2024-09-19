@@ -5,7 +5,7 @@ set -eo pipefail
 docker-image() {
     SRC_PATH="nginx-azure-lb/nginxaas-operator/nginxaas-operator"
     SRC_TAG=$(echo "${CI_COMMIT_TAG}" | cut -f 2 -d "-")
-    SRC_IMG="${SRC_REGISTRY}/${SRC_PATH}:${SRC_TAG}"
+    SRC_IMG="${SRC_REGISTRY}/${SRC_PATH}:main-${SRC_TAG}"
     DST_PATH="nginx/nginxaas-operator"
     DST_TAG="${CI_COMMIT_TAG}"
     DST_IMG="${DST_REGISTRY}/${DST_PATH}:${DST_TAG}"
