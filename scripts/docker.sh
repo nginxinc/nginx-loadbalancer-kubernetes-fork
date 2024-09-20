@@ -81,6 +81,6 @@ fi
 repo="${DEVOPS_DOCKER_URL}/nginx-azure-lb/${CI_PROJECT_NAME}/$image"
 # shellcheck source=/dev/null
 # shellcheck disable=SC2153
-version=$(source "${ROOT_DIR}/version";echo "$VERSION")
+version=$(cat version)
 
 "$action"
