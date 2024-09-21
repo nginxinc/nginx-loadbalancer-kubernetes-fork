@@ -177,18 +177,6 @@ checkmarx-scan:
   needs: []
   allow_failure: true
 
-tag:
-  stage: release
-  image: $DEVTOOLS_IMG
-  extends:
-    - .default-runner
-  script:
-    - ./scripts/release-tag.sh
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: never
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-
 .release-common:
   stage: release
   image: $DEVTOOLS_IMG
