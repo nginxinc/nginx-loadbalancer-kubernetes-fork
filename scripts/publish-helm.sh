@@ -5,8 +5,8 @@ set -eo pipefail
 ROOT_DIR=$(git rev-parse --show-toplevel)
 
 publish_helm() {
-    pkg="nginx-loadbalancer-kubernetes-${VERSION}.tgz"
-    helm package --version "${VERSION}" --app-version "${VERSION}" charts/nlk
+    pkg="nginx-loadbalancer-kubernetes-${version}.tgz"
+    helm package --version "${version}" --app-version "${version}" charts/nlk
     helm push "${pkg}" "${repo}"
 }
 
@@ -34,6 +34,6 @@ fi
 repo="oci://${DEVOPS_DOCKER_URL}/nginx-azure-lb/${CI_PROJECT_NAME}/charts/${CI_COMMIT_REF_SLUG}"
 # shellcheck source=/dev/null
 # shellcheck disable=SC2153
-version=$(source "${ROOT_DIR}/version";echo "$VERSION")
+version=$(cat version)
 
 publish_helm

@@ -9,7 +9,7 @@ if [[ -z $CI_COMMIT_SHORT_SHA ]]; then
     CI_COMMIT_SHORT_SHA=$(git rev-parse --short=8 HEAD)
 fi
 if [[ -z $VERSION ]]; then
-    VERSION=$(source version;echo "$VERSION")
+    VERSION=$(cat version)
 fi
 
 if [ "$os" == "linux" ]; then

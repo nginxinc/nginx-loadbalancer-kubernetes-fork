@@ -3,7 +3,7 @@ BUILD_DIR = build
 export BUILD_DIR
 RESULTS_DIR = results
 export RESULTS_DIR
-VERSION = $(shell bash -c 'source version; echo $$VERSION')
+VERSION = $(shell cat version)
 export VERSION
 
 DOCKER_REGISTRY ?= local
