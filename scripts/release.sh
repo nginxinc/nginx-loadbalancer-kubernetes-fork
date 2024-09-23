@@ -19,7 +19,7 @@ helm-chart() {
     SRC_PATH="nginx-azure-lb/nginxaas-operator/charts/main/nginx-loadbalancer-kubernetes"
     SRC_TAG="0.1.0"
     SRC_CHART="oci://${SRC_REGISTRY}/${SRC_PATH}"
-    DST_PATH="nginxinc/charts"
+    DST_PATH="nginxcharts"
     DST_TAG="0.1.0"
     DST_CHART="oci://${DST_REGISTRY}/${DST_PATH}"
 
