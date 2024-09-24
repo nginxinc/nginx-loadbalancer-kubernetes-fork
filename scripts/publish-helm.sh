@@ -5,7 +5,7 @@ set -eo pipefail
 ROOT_DIR=$(git rev-parse --show-toplevel)
 
 publish_helm() {
-    pkg="nginx-loadbalancer-kubernetes-${version}.tgz"
+    pkg="nginxaas-operator-${version}.tgz"
     helm package --version "${version}" --app-version "${version}" charts/nlk
     helm push "${pkg}" "${repo}"
 }
