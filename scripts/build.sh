@@ -36,5 +36,5 @@ ldflags=(
 go build \
     -v -tags "release osusergo" \
     -ldflags "${ldflags[*]}" \
-    -o "${BUILD_DIR}/nginxaas-operator" \
+    -o "${BUILD_DIR}/nginxaas-loadbalancer-kubernetes" \
     "$pkg_path"

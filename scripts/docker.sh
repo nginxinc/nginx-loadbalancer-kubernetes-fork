@@ -69,7 +69,7 @@ parse_args() {
 }
 
 # MAIN
-image="nginxaas-operator"
+image="nginxaas-loadbalancer-kubernetes"
 parse_args "$@"
 init_ci_vars
 
