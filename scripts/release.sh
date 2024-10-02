@@ -4,10 +4,8 @@ set -eo pipefail
 
 docker-image() {
     SRC_PATH="nginx-azure-lb/nginxaas-loadbalancer-kubernetes/nginxaas-loadbalancer-kubernetes"
-    SRC_TAG=$(echo "${CI_COMMIT_TAG}" | cut -f 2 -d "-")
     SRC_IMG="${SRC_REGISTRY}/${SRC_PATH}:main-${SRC_TAG}"
     DST_PATH="nginx/nginxaas-loadbalancer-kubernetes"
-    DST_TAG="${CI_COMMIT_TAG}"
     DST_IMG="${DST_REGISTRY}/${DST_PATH}:${DST_TAG}"
 
     docker pull "${SRC_IMG}"
@@ -17,10 +15,8 @@ docker-image() {
 
 helm-chart() {
     SRC_PATH="nginx-azure-lb/nginxaas-loadbalancer-kubernetes/charts/main/nginxaas-loadbalancer-kubernetes"
-    SRC_TAG="0.1.0"
     SRC_CHART="oci://${SRC_REGISTRY}/${SRC_PATH}"
     DST_PATH="nginxcharts"
-    DST_TAG="0.1.0"
     DST_CHART="oci://${DST_REGISTRY}/${DST_PATH}"
 
     helm pull "${SRC_CHART}" --version "${SRC_TAG}"
@@ -51,6 +47,8 @@ set_docker_common() {
     devops.docker.login
     # Login to Dockerhub.
     docker login --username "${DOCKERHUB_USERNAME}" --password "${DOCKERHUB_PASSWORD}" "${DST_REGISTRY}"
+    SRC_TAG=$(echo "${CI_COMMIT_TAG}" | cut -f 2 -d "v")
+    DST_TAG="${SRC_TAG}"
 }
 
 parse_args() {
