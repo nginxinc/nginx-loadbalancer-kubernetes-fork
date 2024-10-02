@@ -72,7 +72,7 @@ main() {
         echo "This script is meant to be run in the CI."
         exit 1
     fi
-    pttn="^release-[0-9]+\.[0-9]+\.[0-9]+"
+    pttn="^v[0-9]+\.[0-9]+\.[0-9]+"
     if ! [[ "${CI_COMMIT_TAG}" =~ $pttn ]]; then
         echo "CI_COMMIT_TAG needs to be set to valid semver format."
         exit 1
