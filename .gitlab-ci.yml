@@ -89,6 +89,7 @@ lint + unit-test + build:
     - *golang-private
     - |
       if [ "$CI_COMMIT_BRANCH" != "$CI_DEFAULT_BRANCH" ]; then
+        time make helm-lint
         time make lint
         git diff --exit-code
         time make test

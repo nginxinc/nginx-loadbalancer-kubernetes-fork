@@ -13,7 +13,7 @@ DOCKER_TAG ?= latest
 GOPRIVATE = *.f5net.com,gitlab.com/f5
 export GOPRIVATE
 
-.PHONY: default tools deps fmt lint test build build.docker publish
+.PHONY: default tools deps fmt lint test build build.docker publish helm-lint
 
 default: build
 
@@ -34,6 +34,9 @@ fmt:
 lint:
 	@find . -type f -name "*.go" -exec goimports -e -w {} \+
 	@golangci-lint run -v ./...
+
+helm-lint:
+	helm lint charts/nlk/
 
 test:
 	@./scripts/test.sh
