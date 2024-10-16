@@ -8,7 +8,8 @@ log() {
 
 package() {
     CMD="az acr login --name nlbmarketplaceacrprod --username ${ARM_CLIENT_ID_ACR} --password ${ARM_CLIENT_SECRET_ACR}"
-    CMD+=" && cpa buildbundle -d ${BUNDLE_DIR} --telemetryOptOut"
+    ${CMD}
+    CMD="cpa buildbundle -d ${BUNDLE_DIR} --telemetryOptOut"
     ${CMD}
 }
 
