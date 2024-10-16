@@ -60,3 +60,11 @@ publish: build-linux build-linux-docker
 
 clean:
 	rm -rf $(BUILD_DIR)/
+
+.PHONY: cnab-validate cnab-package
+
+cnab-validate:
+	@./scripts/cnab.sh validate
+
+cnab-package:
+	@./scripts/cnab.sh package

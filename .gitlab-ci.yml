@@ -18,9 +18,11 @@ stages:
   - lint+test+build
   - security scanning
   - release
+  - release-cnab
 
 variables:
   DEVTOOLS_IMG: ${DEVOPS_DOCKER_URL_DEFAULT}/nginx-azure-lb/nlb-devtools:latest
+  CNAB_IMG: mcr.microsoft.com/container-package-app:latest
 
 workflow:
   rules:
@@ -105,6 +107,20 @@ lint + unit-test + build:
     expire_in: 3 hours
     reports:
       junit: results/report.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH || $CI_MERGE_REQUEST_ID'
+
+validate-cnab:
+  stage: lint+test+build
+  image: $CNAB_IMG
+  extends:
+    - .devops-docker-cicd-large
+  script:
+    - tdnf install -y make
+    - curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    - make cnab-validate
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
@@ -229,3 +245,14 @@ dockerhub-helm-release:
     - .release-common
   script:
     - ./scripts/release.sh helm-chart
+
+cnab-release:
+  extends:
+    - .devops-docker-cicd
+    - .release-common
+  stage: release-cnab
+  image: $CNAB_IMG
+  script:
+    - tdnf install -y make wget
+    - curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    - make cnab-package
