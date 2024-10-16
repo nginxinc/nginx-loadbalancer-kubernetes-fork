@@ -7,8 +7,9 @@ log() {
 }
 
 package() {
-    log "Not Implemented."
-    exit 1
+    CMD="az acr login --name nlbmarketplaceacrprod --username ${ARM_CLIENT_ID_ACR} --password ${ARM_CLIENT_SECRET_ACR}"
+    CMD+=" && cpa buildbundle -d ${BUNDLE_DIR} --telemetryOptOut"
+    ${CMD}
 }
 
 validate() {

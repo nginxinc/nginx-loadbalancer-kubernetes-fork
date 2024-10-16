@@ -18,6 +18,7 @@ stages:
   - lint+test+build
   - security scanning
   - release
+  - release-cnab
 
 variables:
   DEVTOOLS_IMG: ${DEVOPS_DOCKER_URL_DEFAULT}/nginx-azure-lb/nlb-devtools:latest
@@ -117,8 +118,8 @@ validate-cnab:
   extends:
     - .devops-docker-cicd-large
   script:
-    - tdnf install -y make wget
-    - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    - tdnf install -y make
+    - curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
     - make cnab-validate
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
@@ -244,3 +245,14 @@ dockerhub-helm-release:
     - .release-common
   script:
     - ./scripts/release.sh helm-chart
+
+cnab-release:
+  extends:
+    - .devops-docker-cicd
+    - .release-common
+  stage: release-cnab
+  image: $CNAB_IMG
+  script:
+    - tdnf install -y make wget
+    - curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    - make cnab-package
