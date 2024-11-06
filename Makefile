@@ -13,7 +13,7 @@ DOCKER_TAG ?= latest
 GOPRIVATE = *.f5net.com,gitlab.com/f5
 export GOPRIVATE
 
-.PHONY: default tools deps fmt lint test build build.docker publish helm-lint
+.PHONY: default tools deps fmt lint test build build.docker publish helm-lint deploy
 
 default: build
 
@@ -57,6 +57,11 @@ publish-helm:
 publish: build-linux build-linux-docker
 	@scripts/docker-login.sh
 	@./scripts/docker.sh publish
+
+deploy:
+	@[ -f $(KUBECONFIG) ] || (echo "KUBECONFIG not found." && false)
+	$(MAKE) publish
+	@scripts/deploy.sh
 
 clean:
 	rm -rf $(BUILD_DIR)/
