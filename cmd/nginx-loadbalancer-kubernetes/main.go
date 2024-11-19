@@ -17,6 +17,7 @@ import (
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/synchronization"
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/translation"
 	"github.com/nginxinc/kubernetes-nginx-ingress/pkg/buildinfo"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/workqueue"
@@ -53,18 +54,32 @@ func run() error {
 		return fmt.Errorf(`error initializing synchronizer: %w`, err)
 	}
 
+	factory := informers.NewSharedInformerFactoryWithOptions(
+		k8sClient, settings.Watcher.ResyncPeriod,
+	)
+
+	serviceInformer := factory.Core().V1().Services()
+	endpointSliceInformer := factory.Discovery().V1().EndpointSlices()
+	endpointSliceLister := endpointSliceInformer.Lister()
+	nodesInformer := factory.Core().V1().Nodes()
+	nodesLister := nodesInformer.Lister()
+
 	handlerWorkqueue := buildWorkQueue(settings.Synchronizer.WorkQueueSettings)
 
-	handler := observation.NewHandler(settings, synchronizer, handlerWorkqueue, translation.NewTranslator(k8sClient))
+	translator := translation.NewTranslator(endpointSliceLister, nodesLister)
+	handler := observation.NewHandler(settings, synchronizer, handlerWorkqueue, translator)
 
-	watcher, err := observation.NewWatcher(settings, handler, k8sClient)
+	watcher, err := observation.NewWatcher(settings, handler, serviceInformer, endpointSliceInformer, nodesInformer)
 	if err != nil {
 		return fmt.Errorf(`error occurred creating a watcher: %w`, err)
 	}
 
-	err = watcher.Initialize()
-	if err != nil {
-		return fmt.Errorf(`error occurred initializing the watcher: %w`, err)
+	factory.Start(ctx.Done())
+	results := factory.WaitForCacheSync(ctx.Done())
+	for name, success := range results {
+		if !success {
+			return fmt.Errorf(`error occurred waiting for cache sync for %s`, name)
+		}
 	}
 
 	go handler.Run(ctx)
@@ -73,9 +88,9 @@ func run() error {
 	probeServer := probation.NewHealthServer()
 	probeServer.Start()
 
-	err = watcher.Watch(ctx)
+	err = watcher.Run(ctx)
 	if err != nil {
-		return fmt.Errorf(`error occurred watching for events: %w`, err)
+		return fmt.Errorf(`error occurred running watcher: %w`, err)
 	}
 
 	<-ctx.Done()
