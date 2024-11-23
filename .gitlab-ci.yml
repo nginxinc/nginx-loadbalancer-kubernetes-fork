@@ -147,14 +147,8 @@ whitesource-scan:
     # - .go-cache
     - .whitesource-template-go
   variables:
-    NESTED: "true"
-    WS_WSS_URL: "https://f5.whitesourcesoftware.com/agent"
-    WS_APIKEY: "${WS_APIKEY_NGINX}"
-    WS_PRODUCTNAME: "N4A"
-    WS_PROJECTNAME: "${CI_PROJECT_NAME}"
-    WS_GO_MODULES_RESOLVEDEPENDENCIES: "true"
-    WS_GO_RESOLVEDEPENDENCIES: "false"
-    WS_GENERATEPROJECTDETAILSJSON: "true"
+    PRODUCT_PREFIX: "n4a"
+    WS_PROJECT: "${CI_PROJECT_NAME}"
   script:
     - *golang-private
     - !reference [.whitesource-template-go, script]
