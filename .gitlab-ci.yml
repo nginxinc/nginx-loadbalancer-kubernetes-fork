@@ -17,6 +17,7 @@ include:
 stages:
   - lint+test+build
   - security scanning
+  - e2e-tests
   - release
   - release-cnab
 
@@ -217,6 +218,22 @@ container_scanning:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
     - when: on_success
+
+trigger-e2e:
+  stage: e2e-tests
+  variables:
+    IS_TEST_ONLY: "true"
+    TEST_TYPE: "e2e.arm"
+    TEST_NLK_CHART_URL: "oci://${DEVOPS_DOCKER_URL_DEFAULT}/nginx-azure-lb/${CI_PROJECT_NAME}/charts/${CI_COMMIT_REF_SLUG}/nginxaas-loadbalancer-kubernetes"
+    TEST_NLK_IMG_TAG: ${CI_COMMIT_SHORT_SHA}
+    TEST_ARGS: "test_nlk.py"
+    AZ_LOCATION: "West Central US"
+  trigger:
+    project: f5/nginx/nginxazurelb/tools/nlbtest
+    branch: main
+    strategy: depend
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 .release-common:
   stage: release
