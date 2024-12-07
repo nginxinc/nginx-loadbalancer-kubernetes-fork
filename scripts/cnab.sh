@@ -25,6 +25,7 @@ set_version() {
 
 update_helm_chart() {
     yq -ie '.global.azure.images.nlk.registry = .nlk.image.registry | .global.azure.images.nlk.image = .nlk.image.repository | .global.azure.images.nlk.tag = env(VERSION)' charts/nlk/values.yaml
+    yq -ie '.version = env(VERSION) | .appVersion = env(VERSION)' charts/nlk/Chart.yaml
 }
 
 update_bundle() {
