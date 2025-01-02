@@ -17,6 +17,7 @@ import (
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/synchronization"
 	"github.com/nginxinc/kubernetes-nginx-ingress/internal/translation"
 	"github.com/nginxinc/kubernetes-nginx-ingress/pkg/buildinfo"
+	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -49,11 +50,6 @@ func run() error {
 
 	synchronizerWorkqueue := buildWorkQueue(settings.Synchronizer.WorkQueueSettings)
 
-	synchronizer, err := synchronization.NewSynchronizer(settings, synchronizerWorkqueue)
-	if err != nil {
-		return fmt.Errorf(`error initializing synchronizer: %w`, err)
-	}
-
 	factory := informers.NewSharedInformerFactoryWithOptions(
 		k8sClient, settings.Watcher.ResyncPeriod,
 	)
@@ -64,12 +60,15 @@ func run() error {
 	nodesInformer := factory.Core().V1().Nodes()
 	nodesLister := nodesInformer.Lister()
 
-	handlerWorkqueue := buildWorkQueue(settings.Synchronizer.WorkQueueSettings)
-
 	translator := translation.NewTranslator(endpointSliceLister, nodesLister)
-	handler := observation.NewHandler(settings, synchronizer, handlerWorkqueue, translator)
 
-	watcher, err := observation.NewWatcher(settings, handler, serviceInformer, endpointSliceInformer, nodesInformer)
+	synchronizer, err := synchronization.NewSynchronizer(
+		settings, synchronizerWorkqueue, translator, serviceInformer.Lister())
+	if err != nil {
+		return fmt.Errorf(`error initializing synchronizer: %w`, err)
+	}
+
+	watcher, err := observation.NewWatcher(settings, synchronizer, serviceInformer, endpointSliceInformer, nodesInformer)
 	if err != nil {
 		return fmt.Errorf(`error occurred creating a watcher: %w`, err)
 	}
@@ -82,19 +81,17 @@ func run() error {
 		}
 	}
 
-	go handler.Run(ctx)
-	go synchronizer.Run(ctx.Done())
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error { return synchronizer.Run(ctx) })
 
 	probeServer := probation.NewHealthServer()
 	probeServer.Start()
 
-	err = watcher.Run(ctx)
-	if err != nil {
-		return fmt.Errorf(`error occurred running watcher: %w`, err)
-	}
+	g.Go(func() error { return watcher.Run(ctx) })
 
-	<-ctx.Done()
-	return nil
+	err = g.Wait()
+	return err
 }
 
 func initializeLogger(logLevel string) {
