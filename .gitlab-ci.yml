@@ -9,9 +9,7 @@ include:
   - project: "f5/nginx/tools/devops-utils"
     file: "include/devops-whitesource.yaml"
     ref: "master"
-  - project: "f5/nginx/tools/devops-utils"
-    file: "/include/gitlab-sast.yml"
-    ref: "master"
+  - template: Jobs/SAST.gitlab-ci.yml
   - template: Jobs/Container-Scanning.gitlab-ci.yml
 
 stages:
@@ -163,15 +161,6 @@ whitesource-scan:
       - ${CI_PROJECT_DIR}/whitesource/
     expire_in: 1 weeks
 
-################################################################################
-# GitLab SAST security scanning
-# CISO requires that all products be scanned statically for vulnerabilities.
-# For more information, please see:
-#   https://gitlab.com/f5/nginx/tools/devops-utils/-/blob/master/include/gitlab-sast.md
-# NOTE: please do not alter, change, modify, or overwrite job rules, job
-# variables, or runtime states in order to maintain compliance to CISO
-# requirements.
-################################################################################
 sast:
   stage: lint+test+build
 
