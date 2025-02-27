@@ -21,7 +21,7 @@ tools:
 	@go install gotest.tools/gotestsum@latest
 	@go install golang.org/x/tools/cmd/goimports@latest
 	@go install github.com/jstemmer/go-junit-report@v1.0.0
-	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.57.1
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin v1.64.5
 
 deps:
 	@go mod download
