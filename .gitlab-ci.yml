@@ -216,7 +216,6 @@ trigger-e2e:
     TEST_NLK_CHART_URL: "oci://${DEVOPS_DOCKER_URL_DEFAULT}/nginx-azure-lb/${CI_PROJECT_NAME}/charts/${CI_COMMIT_REF_SLUG}/nginxaas-loadbalancer-kubernetes"
     TEST_NLK_IMG_TAG: ${CI_COMMIT_SHORT_SHA}
     TEST_ARGS: "test_nlk.py"
-    AZ_LOCATION: "West Central US"
   trigger:
     project: f5/nginx/nginxazurelb/tools/nlbtest
     branch: main
