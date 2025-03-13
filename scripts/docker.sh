@@ -13,6 +13,7 @@ build() {
         --tag "${repo}:${CI_COMMIT_REF_SLUG}" \
         --tag "${repo}:${CI_COMMIT_REF_SLUG}-$version" \
         --tag "${repo}:${CI_COMMIT_SHORT_SHA}" \
+        --platform "linux/amd64" \
         -f "${ROOT_DIR}/Dockerfile" .
 }
 
