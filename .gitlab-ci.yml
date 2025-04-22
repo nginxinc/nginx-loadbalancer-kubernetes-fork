@@ -154,7 +154,7 @@ whitesource-scan:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
       when: never
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - !reference [.whitesource-template-go, rules]
   artifacts:
     when: always
     paths:
@@ -178,7 +178,6 @@ checkmarx-scan:
     CX_SOURCES: "."
     CX_FLOW_ZIP_EXCLUDE: ""
   needs: []
-  allow_failure: true
 
 # https://docs.gitlab.com/ee/user/application_security/container_scanning/
 container_scanning:
