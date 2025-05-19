@@ -32,7 +32,8 @@ fmt:
 	@find . -type f -name "*.go" -exec goimports -e -w {} \+
 
 lint:
-	@find . -type f -name "*.go" -exec goimports -e -w {} \+
+	@find . -type f -not -path "./.go/pkg/mod/*" -name "*.go" -exec goimports -e -w {} \+
+	@ git diff --exit-code
 	@golangci-lint run -v ./...
 
 helm-lint:
